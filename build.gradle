@@ -41,6 +41,14 @@ subprojects {
         implementation "org.mapstruct:mapstruct:$mapstructVersion"
         implementation 'org.springframework.boot:spring-boot-starter-hateoas:2.7.7'
 
+        implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+        implementation 'io.jsonwebtoken:jjwt:0.9.1'
+        compileOnly 'org.projectlombok:lombok:1.18.34'
+        annotationProcessor 'org.projectlombok:lombok:1.18.34'
+        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+        implementation "org.springframework.boot:spring-boot-starter-security:2.7.7"
+        implementation "org.springframework.boot:spring-boot-starter-security:2.7.7"
+
         testImplementation "org.springframework:spring-test:$springVersion"
         testImplementation "com.tngtech.archunit:archunit-junit5:1.0.0"
         testImplementation "org.junit.jupiter:junit-jupiter-api:$jupiterVersion"
@@ -52,6 +60,11 @@ subprojects {
         testImplementation 'org.hamcrest:hamcrest:2.2'
         testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.7'
         testImplementation 'com.h2database:h2'
+
+
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.34'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
 
         runtimeOnly 'com.h2database:h2'
 
