@@ -2,7 +2,7 @@ package com.mjc.school.controller.exceptions;
 
 import com.mjc.school.service.exception.NotFoundException;
 import com.mjc.school.service.exception.ValidationException;
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
+import org.postgresql.util.PSQLException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -22,8 +22,8 @@ import static com.mjc.school.service.exception.ServiceExceptionCode.*;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ResponseBody
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler(value = JdbcSQLIntegrityConstraintViolationException.class)
-    protected ResponseEntity<CustomErrorResponse> handleValidationException(JdbcSQLIntegrityConstraintViolationException e, WebRequest request) {
+    @ExceptionHandler(value = PSQLException.class)
+    protected ResponseEntity<CustomErrorResponse> handleValidationException(PSQLException e, WebRequest request) {
         if (e.getMessage().contains("AUTHORS")) {
             return build(VALIDATION_EXCEPTION.getCode(), "Author name has been taken", HttpStatus.NOT_FOUND);
         }

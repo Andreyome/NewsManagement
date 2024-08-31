@@ -1,4 +1,4 @@
-package com.mjc.school.service.userService;
+package com.mjc.school.service.impl;
 
 import com.mjc.school.repository.impl.UserRepository;
 import com.mjc.school.repository.model.UserModel;
@@ -6,8 +6,9 @@ import com.mjc.school.service.dto.UserResponse;
 import com.mjc.school.service.dto.UserSignIn;
 import com.mjc.school.service.dto.UserSignUp;
 import com.mjc.school.service.mapper.UserMapper;
-import lombok.AllArgsConstructor;
 import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,9 +19,15 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-@AllArgsConstructor
 public class UserService implements UserDetailsService {
-    public final UserRepository userRepository;
+    @Autowired
+    public UserService(UserRepository userRepository, JwtService jwtService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
+        this.userRepository=userRepository;
+        this.jwtService=jwtService;
+        this.authenticationManager=authenticationManager;
+        this.passwordEncoder=passwordEncoder;
+    }
+    private final UserRepository userRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;

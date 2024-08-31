@@ -4,10 +4,13 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static io.restassured.RestAssured.given;
@@ -15,14 +18,17 @@ import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
 @Transactional
 @Rollback
 public class AuthorControllerTest {
-    @BeforeAll
-    public static void initiate() {
-        RestAssured.baseURI = "http://localhost:8082";
-        RestAssured.port = 8082;
-    }
+    @Autowired
+    private MockMvc mockMvc;
+//    @BeforeAll
+//    public static void initiate() {
+//        RestAssured.baseURI = "http://localhost:8082";
+//        RestAssured.port = 8082;
+//    }
 
     @Test
     @Transactional

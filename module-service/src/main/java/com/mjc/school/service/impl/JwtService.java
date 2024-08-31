@@ -1,4 +1,4 @@
-package com.mjc.school.service.userService;
+package com.mjc.school.service.impl;
 
 import com.mjc.school.repository.model.UserModel;
 import io.jsonwebtoken.Claims;
@@ -16,7 +16,8 @@ import java.util.Map;
 import java.util.function.Function;
 @Service
 public class JwtService {
-    private String token= "authUserToken";
+    private String token= "HG+Fz0LMw/C/E4bRretdQb1MTIwqP47iBayYBUUCsQY=";
+
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {
         final Claims claims = extractAllClaims(token);

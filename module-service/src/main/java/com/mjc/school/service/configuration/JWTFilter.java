@@ -1,13 +1,12 @@
 package com.mjc.school.service.configuration;
 
-import com.mjc.school.service.userService.JwtService;
-import com.mjc.school.service.userService.UserService;
+import com.mjc.school.service.impl.JwtService;
+import com.mjc.school.service.impl.UserService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;

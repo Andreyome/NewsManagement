@@ -1,9 +1,10 @@
 package com.mjc.school.service.configuration;
 
-import com.mjc.school.service.userService.UserService;
+import com.mjc.school.service.impl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -19,8 +20,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
+    @Lazy
     private UserService userService;
     @Autowired
+    @Lazy
     private JWTFilter jwtFilter;
 
     @Override
@@ -28,11 +31,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/swagger-ui/", "/swagger-resources/*", "/v3/api-docs/").permitAll()
-                .antMatchers("/signup", "/login").permitAll()
+                .antMatchers("/signup", "/login","/authentication/*").permitAll()
                 .antMatchers(HttpMethod.GET).permitAll()
-                .antMatchers(HttpMethod.POST).hasAnyAuthority("User", "Administrator")
-                .antMatchers(HttpMethod.PATCH).hasAuthority("Administrator")
-                .antMatchers(HttpMethod.DELETE).hasAuthority("Administrator")
                 .anyRequest().authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
