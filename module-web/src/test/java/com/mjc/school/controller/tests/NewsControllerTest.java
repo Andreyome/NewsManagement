@@ -1,158 +1,131 @@
 package com.mjc.school.controller.tests;
 
-import com.mjc.school.service.dto.TagDtoResponse;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeAll;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mjc.school.service.dto.*;
+import com.mjc.school.service.impl.CommentService;
+import com.mjc.school.service.impl.NewsService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mjc.school.controller.tests.CommentControllerTest.commentExample;
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest
+@AutoConfigureMockMvc
 public class NewsControllerTest {
-    public static String newsExample = "{ \"authorName\": \"Author example\", \"content\": \"Content example\", \"tagNames\": [ \"Tag name example\",\"Tag example name 2\" ], \"title\": \"Title example\"}";
+    @MockBean
+    private NewsService newsService;
+    private ObjectMapper objectMapper;
+    @Autowired
+    private MockMvc mockMvc;
+    private final NewsDtoRequest newsExample = new NewsDtoRequest("content", "title","AuthorExampleName",new ArrayList<String>(List.of("tagName")));
+    private final NewsDtoResponse mockResponse = new NewsDtoResponse(1L,"content","title",null,null,new AuthorDtoResponse(1L,"AuthorExampleName",null,null),new ArrayList<TagDtoResponse>(List.of(new TagDtoResponse(1L,"TagExample"))),null);
 
-    @BeforeAll
-    public static void initiate() {
-        RestAssured.baseURI = "http://localhost:8082";
-        RestAssured.port = 8082;
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        objectMapper = new ObjectMapper();
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void createNewsTest() {
-        Response response = RestAssured.given()
+    @WithMockUser(authorities = "User")
+    public void testCreate() throws Exception {
+        when(newsService.create(newsExample)).thenReturn(mockResponse);
+        mockMvc.perform(post("/news")
                 .contentType("application/json")
-                .body(newsExample)
-                .when()
-                .request("POST", "/news")
-                .then()
-                .statusCode(201)
-                .body("title", equalTo("Title example")).extract().response();
-        deleteTmp(response);
+                .content(objectMapper.writeValueAsString(newsExample)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title", equalTo("title")))
+                .andExpect(jsonPath("$.content", equalTo("content")))
+                .andExpect(jsonPath("$.authorDto.id", equalTo(1)))
+                .andExpect(jsonPath("$.authorDto.name", equalTo("AuthorExampleName")))
+                .andExpect(jsonPath("$.tagDtoResponseList[0].id", equalTo(1)))
+                .andExpect(jsonPath("$.tagDtoResponseList[0].name", equalTo("TagExample")));
     }
-
     @Test
-    @Transactional
-    @Rollback
-    public void findNewsByIdTest() {
-        Response response = createTmpNews();
-        given().request("GET", "/news/" + response.jsonPath().getLong("id"))
-                .then()
-                .statusCode(200)
-                .body("title", equalTo("Title example"));
-        deleteTmp(response);
+    public void testReadAllNews() throws Exception {
+        List<NewsDtoResponse> responseList = List.of(mockResponse,mockResponse);
+        when(newsService.readAll(anyInt(),anyInt(),anyString())).thenReturn(responseList);
+        mockMvc.perform(get("/news"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title", equalTo("title")))
+                .andExpect(jsonPath("$[0].content", equalTo("content")))
+                .andExpect(jsonPath("$[0].authorDto.id", equalTo(1)))
+                .andExpect(jsonPath("$[0].authorDto.name", equalTo("AuthorExampleName")))
+                .andExpect(jsonPath("$[0].tagDtoResponseList[0].id", equalTo(1)))
+                .andExpect(jsonPath("$[0].tagDtoResponseList[0].name", equalTo("TagExample")))
+                .andExpect(jsonPath("$[1].tagDtoResponseList[0].id", equalTo(1)))
+                .andExpect(jsonPath("$[1].tagDtoResponseList[0].name", equalTo("TagExample")))
+                .andExpect(jsonPath("$[1].authorDto.name", equalTo("AuthorExampleName")))
+                .andExpect(jsonPath("$[0].content", equalTo("content")));
     }
-
     @Test
-    @Transactional
-    @Rollback
-    public void testMethodsGetTagCommentAuthorByNewsId() {
-        System.out.println("Test for methods to get Tag/Comment/Author By NewsId Started.");
-        Response response = createTmpNews();
-        Long newsId = response.jsonPath().getLong("id");
-        String bodyComment = commentExample + newsId + "}";
-        List<TagDtoResponse> tags = response.jsonPath().getList("tagDtoResponseList", TagDtoResponse.class);
-        List<String> tagNames = new ArrayList<>();
-        for (TagDtoResponse tag : tags) {
-            tagNames.add(tag.name());
-        }
-        given()
-                .request("GET", "/news/" + response.jsonPath().getLong("id") + "/author")
-                .then()
-                .statusCode(200)
-                .body("name", equalTo("Author example"));
-        Response response1 = RestAssured.given()
-                .request("GET", "/news/" + response.jsonPath().getLong("id") + "/tag")
-                .then()
-                .statusCode(200)
-                .body("name", equalTo(tagNames)).extract().response();
-        Integer commentID = RestAssured.given()
+    @WithMockUser(authorities = "User")
+    public void testDeleteWithoutProperAuthority_AndReturnForbidden() throws Exception {
+        when(newsService.deleteById(anyLong())).thenReturn(true);
+        mockMvc.perform(delete("/news/{id}",1))
+                .andExpect(status().isForbidden());
+    }
+    @Test
+    public void testDeleteWithoutAuthorisation_AndReturnUnauthorised() throws Exception {
+        when(newsService.deleteById(anyLong())).thenReturn(true);
+        mockMvc.perform(delete("/news/{id}",1))
+                .andExpect(status().isUnauthorized());
+    }
+    @Test
+    @WithMockUser(authorities = "Administrator")
+    public void testDeleteWithProperAuthority_AndReturnNoContent() throws Exception {
+        when(newsService.deleteById(anyLong())).thenReturn(true);
+        mockMvc.perform(delete("/news/{id}",1))
+                .andExpect(status().isNoContent());
+    }
+    @Test
+    @WithMockUser(authorities = "User")
+    public void testUpdateWithProperAuthorities_AndReturnIsOk() throws Exception {
+        when(newsService.update(anyLong(),any())).thenReturn(mockResponse);
+        mockMvc.perform(patch("/news/{id}",1)
                 .contentType("application/json")
-                .body(bodyComment)
-                .when()
-                .request("POST", "/comment")
-                .then()
-                .statusCode(201)
-                .body("content", equalTo("Comment example"))
-                .body("newsId", equalTo(response.jsonPath().getInt("id")))
-                .extract().path("id");
-        List<String> commentNames = new ArrayList<>();
-        commentNames.add("Comment example");
-        given().request("GET", "/news/" + newsId + "/comment")
-                .then().statusCode(200)
-                .body("content", equalTo(commentNames));
-        deleteTmp(response);
-        System.out.println("Test for methods to get Tag/Comment/Author By NewsId finished successfully.");
+                .content(objectMapper.writeValueAsString(newsExample)))
+                .andExpect(status().isOk());
     }
-
     @Test
-    @Transactional
-    @Rollback
-    public void testSearchNewsByParams() {
-        System.out.println("Test for methods to get News by params Started.");
-        Response response = createTmpNews();
-        List<String> newsExampleChecker = new ArrayList<>();
-        newsExampleChecker.add("Title example");
-        List<Integer> newsIdList = new ArrayList<>();
-        newsIdList.add(response.jsonPath().getInt("id"));
-        List<Integer> tagIds = new ArrayList<>((response.jsonPath().getList("tagDtoResponseList.id")));
-        given().contentType("application/json")
-                .queryParam("Title", "Title example")
-                .when().request("GET", "/news/byParams/")
-                .then().body("title", equalTo(newsExampleChecker)).statusCode(200)
-                .body("id", equalTo(newsIdList));
-        newsExampleChecker.set(0, "Author example");
-        given().contentType("application/json")
-                .queryParam("Author", "Author example")
-                .when().request("GET", "/news/byParams")
-                .then().body("authorDto.name", equalTo(newsExampleChecker)).statusCode(200)
-                .body("id", equalTo(newsIdList));
-        ;
-        newsExampleChecker.set(0, "Content example");
-        given().contentType("application/json")
-                .queryParam("Content", "Content example")
-                .when().request("GET", "/news/byParams")
-                .then().body("content", equalTo(newsExampleChecker)).statusCode(200)
-                .body("id", equalTo(newsIdList));
-        StringBuilder body = new StringBuilder();
-        tagIds.forEach(a -> body.append("Tag_Ids=" + a + "&"));
-        List<Integer> tagIdsForTagsParam = new ArrayList<>();
-        tagIds.forEach(a -> tagIdsForTagsParam.add(response.jsonPath().getInt("id")));
-        given().contentType("application/json")
-                .when().request("GET", "/news/byParams?" + body)
-                .then().body("id", equalTo(tagIdsForTagsParam));
-        deleteTmp(response);
-        System.out.println("Test for methods to get News by params finished successfully");
+    public void testUpdateWithoutAuthorisation_AndReturnIsUnauthorised() throws Exception {
+        when(newsService.update(anyLong(),any())).thenReturn(mockResponse);
+        mockMvc.perform(patch("/news/{id}",1)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(newsExample)))
+                .andExpect(status().isUnauthorized());
     }
-
-    public static Response createTmpNews() {
-        Response response = RestAssured.given()
-                .contentType("application/json")
-                .body(newsExample)
-                .when()
-                .request("POST", "/news")
-                .then()
-                .statusCode(201)
-                .body("title", equalTo("Title example")).extract().response();
-        System.out.println(response.asPrettyString());
-        return response;
-    }
-
-    public static void deleteTmp(Response response) {
-        given().delete("/news/" + response.jsonPath().getLong("id")).then().statusCode(204);
-        given().delete("/author/" + response.jsonPath().getLong("authorDto.id")).then().statusCode(204);
-        List<Integer> tagIds = new ArrayList<>((response.jsonPath().getList("tagDtoResponseList.id")));
-        tagIds.forEach(a -> given().request("DELETE", "/tag/" + a).then().statusCode(204));
-        System.out.println("Tmp info deleted successfully");
+    @Test
+    public void testReadByParamsWithProperAuthorities_AndReturnIsOk() throws Exception {
+        when(newsService.readNewsByParams(any(),any(),anyString(),anyString(),anyString())).thenReturn(List.of(mockResponse));
+        mockMvc.perform(get("/news/byParams")
+                        .param("Tag_Ids",String.valueOf(5L), String.valueOf(6L))
+                        .param("Tag_Names","TagName","TagName2")
+                        .param("Author","AuthorExampleName")
+                        .param("Content","content")
+                        .param("Title","title"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title", equalTo("title")))
+                .andExpect(jsonPath("$[0].content", equalTo("content")))
+                .andExpect(jsonPath("$[0].authorDto.id", equalTo(1)));
     }
 }

@@ -110,7 +110,7 @@ public class NewsService implements NewsServInterface {
         return mapper.modelListToDtoList(newsRepository.readNewsByParams(tagsIds, tagsNames, authorName, title, content));
     }
 
-    private void createNonExistingTags(List<String> tagNames) {
+     public void createNonExistingTags(List<String> tagNames) {
         tagNames.stream().filter(tagName -> tagRepository.readTagByName(tagName).isEmpty())
                 .forEach(nonExistTagName -> {
                     TagModel tag = new TagModel();
@@ -119,7 +119,7 @@ public class NewsService implements NewsServInterface {
                 });
     }
 
-    private void createNonExistingAuthor(String name) {
+    public void createNonExistingAuthor(String name) {
         if (name != null && !name.equals("")) {
             if (authorRepository.readByName(name).isEmpty()) {
                 AuthorModel authorModel = new AuthorModel();

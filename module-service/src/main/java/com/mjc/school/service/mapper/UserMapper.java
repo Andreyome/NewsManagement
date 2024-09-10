@@ -1,6 +1,5 @@
 package com.mjc.school.service.mapper;
 
-import com.mjc.school.repository.model.Roles;
 import com.mjc.school.repository.model.UserModel;
 import com.mjc.school.service.dto.UserSignIn;
 import com.mjc.school.service.dto.UserSignUp;
@@ -13,13 +12,11 @@ public interface UserMapper {
     @Mapping(target = "role", expression = "java(com.mjc.school.repository.model.Roles.User)")
     @Mapping(target = "username", source = "username")
     @Mapping(target = "password", source = "password")
-//    @Mapping(target = "authorities", ignore = true)
     UserModel userDtoToModel(UserSignUp userSignUp);
 
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "username", source = "username")
     @Mapping(target = "password", source = "password")
-//    @Mapping(target = "authorities", ignore = true)
     UserModel userDtoToModel(UserSignIn userSignin);
 }

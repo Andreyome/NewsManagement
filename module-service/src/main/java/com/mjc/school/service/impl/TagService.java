@@ -43,7 +43,7 @@ public class TagService implements TagServInterface {
         Optional<TagModel> tagModelOptional = tagRepository.readById(id);
         if (tagModelOptional.isPresent()) {
             return mapper.tagToDto(tagModelOptional.get());
-        } else throw new RuntimeException("No tag with such id found");
+        } else throw new NotFoundException("No tag with such id found");
     }
 
     @Override
@@ -52,7 +52,7 @@ public class TagService implements TagServInterface {
         try {
             return mapper.tagToDto(tagRepository.create(mapper.tagDtoToModel(validator.validateTag(createRequest))));
         } catch (DataIntegrityViolationException e) {
-            throw new ValidationException("Author name is already taken");
+            throw new ValidationException("Tag name is already taken");
         }
     }
 
@@ -65,7 +65,7 @@ public class TagService implements TagServInterface {
         try {
             return mapper.tagToDto(tagRepository.update(id, mapper.tagDtoToModel(validator.validateTag(updateRequest))));
         } catch (DataIntegrityViolationException e) {
-            throw new ValidationException("Author name is already taken");
+            throw new ValidationException("Tag name is already taken");
         }
 
     }

@@ -28,7 +28,7 @@ public class AuthorService implements AuthorServInterface {
     private final Validator validator;
 
     @Autowired
-    protected AuthorService(AuthorRepositoryImpl authorRepositoryImpl, Validator validator) {
+    public AuthorService(AuthorRepositoryImpl authorRepositoryImpl, Validator validator) {
         this.authorRepositoryImpl = authorRepositoryImpl;
         this.validator = validator;
     }

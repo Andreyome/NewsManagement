@@ -1,81 +1,78 @@
 package com.mjc.school.controller.tests;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeAll;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mjc.school.service.dto.CommentDtoRequest;
+import com.mjc.school.service.dto.CommentDtoResponse;
+import com.mjc.school.service.impl.CommentService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest
+@AutoConfigureMockMvc
 public class CommentControllerTest {
-    public static final String commentExample = "{\"content\":\"Comment example\" , \"newsId\": ";
-
-    @BeforeAll
-    public static void initiate() {
-        RestAssured.baseURI = "http://localhost:8082";
-        RestAssured.port = 8082;
+    @MockBean
+    private CommentService commentService;
+    private ObjectMapper objectMapper;
+    @Autowired
+    private MockMvc mockMvc;
+    private final CommentDtoRequest commentExample = new CommentDtoRequest("content", 1L);
+    private final CommentDtoResponse mockResponse = new CommentDtoResponse(1L,"content",null,null,1L);
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        objectMapper = new ObjectMapper();
     }
-
     @Test
-    @Transactional
-    @Rollback
-    public void testCreateComment() {
-        Response response = NewsControllerTest.createTmpNews();
-        Long newsId = response.jsonPath().getLong("id");
-        List<String> commentNames = new ArrayList<>();
-        commentNames.add(commentExample + newsId + "}");
-        List<Long> commentIds = new ArrayList<>();
-        commentNames.forEach(a -> commentIds.add(given()
-                .contentType("application/json")
-                .body(String.format(a))
-                .when().request("POST", "/comment").then().statusCode(201)
-                .body("content", equalTo(a.split("[:,\"]+")[2])).extract().jsonPath().getLong("id")));
-        NewsControllerTest.deleteTmp(response);
+    @WithMockUser(authorities = "User")
+    public void testCreateComment() throws Exception {
+        when(commentService.create(any(CommentDtoRequest.class))).thenReturn(mockResponse);
+        mockMvc.perform(post("/comment").contentType("application/json").content(objectMapper.writeValueAsString(commentExample)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.content", equalTo("content")))
+                .andReturn();
+    }
+    @Test
+    @WithMockUser(authorities = "Administrator")
+    public void testDeleteComment() throws Exception {
+        when(commentService.deleteById(any(Long.class))).thenReturn(true);
+        mockMvc.perform(delete("/comment/{id}",1))
+                .andExpect(status().isNoContent());
+    }
+    @Test
+    public void testDeleteCommentWhenUnauthorised() throws Exception {
+        when(commentService.deleteById(any(Long.class))).thenReturn(true);
+        mockMvc.perform(delete("/comment/{id}",1))
+                .andExpect(status().isUnauthorized());
+    }
+    @Test
+    @WithMockUser(authorities = "User")
+    public void testDeleteCommentWhenNotAdministrator() throws Exception {
+        when(commentService.deleteById(any(Long.class))).thenReturn(true);
+        mockMvc.perform(delete("/comment/{id}",1))
+                .andExpect(status().isForbidden());
+    }
+    @Test
+    public void testReadByIdComment() throws Exception {
+        when(commentService.readById(any(Long.class))).thenReturn(mockResponse);
+        mockMvc.perform(get("/comment/{id}",1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", equalTo("content")))
+                .andReturn();
     }
 
-    @Test
-    @Transactional
-    @Rollback
-    public void testDeleteComment() {
-        Response response = NewsControllerTest.createTmpNews();
-        Long newsId = response.jsonPath().getLong("id");
-        List<String> commentNames = new ArrayList<>();
-        commentNames.add(commentExample + newsId + "}");
-        List<Long> commentIds = new ArrayList<>();
-        commentNames.forEach(a -> commentIds.add(given()
-                .contentType("application/json")
-                .body(String.format(a))
-                .when().request("POST", "/comment").then().statusCode(201)
-                .body("content", equalTo(a.split("[:,\"]+")[2])).extract().jsonPath().getLong("id")));
-        commentIds.forEach(a -> given().delete("/comment/" + a).then().statusCode(204));
-        NewsControllerTest.deleteTmp(response);
-    }
-
-    @Test
-    @Transactional
-    @Rollback
-    public void testUpdateComment() {
-        Response response = NewsControllerTest.createTmpNews();
-        Long newsId = response.jsonPath().getLong("id");
-        List<String> commentNames = new ArrayList<>();
-        commentNames.add(commentExample + newsId + "}");
-        String updatedComment = "{\"content\":\"Comment example\" , \"newsId\": " + newsId + "}";
-        List<Long> commentIds = new ArrayList<>();
-        commentNames.forEach(a -> commentIds.add(given()
-                .contentType("application/json")
-                .body(String.format(a))
-                .when().request("POST", "/comment").then().statusCode(201)
-                .body("content", equalTo(a.split("[:,\"]+")[2])).extract().jsonPath().getLong("id")));
-        given().contentType("application/json").body(updatedComment).patch("/comment/" + commentIds.get(0)).then().statusCode(200);
-        NewsControllerTest.deleteTmp(response);
-    }
 
 }

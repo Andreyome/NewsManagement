@@ -1,118 +1,105 @@
 package com.mjc.school.controller.tests;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeAll;
+import com.mjc.school.service.dto.AuthorDtoRequest;
+import com.mjc.school.service.dto.AuthorDtoResponse;
+import com.mjc.school.service.impl.AuthorService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.web.servlet.MvcResult;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@ActiveProfiles("test")
 @AutoConfigureMockMvc
-@Transactional
-@Rollback
 public class AuthorControllerTest {
+    @MockBean
+    private AuthorService authorService;
     @Autowired
     private MockMvc mockMvc;
-//    @BeforeAll
-//    public static void initiate() {
-//        RestAssured.baseURI = "http://localhost:8082";
-//        RestAssured.port = 8082;
-//    }
 
-    @Test
-    @Transactional
-    @Rollback
-    public void givenValidRequest_whenCreateAuthor_thenReturn201() {
-        Integer id = given()
-                .contentType("application/json")
-                .body("{\"name\" : \"Robertson\"}")
-                .when()
-                .request("POST", "/author")
-                .then()
-                .statusCode(201)
-                .body("name", equalTo("Robertson")).extract().path("id");
-        given().request("Delete", "author/" + id.longValue());
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void testCreateTwoAuthorsWithSameNameResultIn404() {
-        Integer id = given()
-                .contentType("application/json")
-                .body("{\"name\" : \"Robertson\"}")
-                .when()
-                .request("POST", "/author")
-                .then()
-                .statusCode(201)
-                .body("name", equalTo("Robertson")).extract().path("id");
-        given()
-                .contentType("application/json")
-                .body("{\"name\" : \"Robertson\"}")
-                .when()
-                .request("POST", "/author")
-                .then()
-                .statusCode(404)
-                .body("code", equalTo("400001"));
-        given().request("Delete", "author/" + id.longValue());
+    @WithMockUser(authorities = "User")
+    public void givenValidRequest_whenCreateAuthor_thenReturn201() throws Exception {
+        AuthorDtoResponse mockResponse = new AuthorDtoResponse(1L, "Robertson", null, null);
+        when(authorService.create(any(AuthorDtoRequest.class))).thenReturn(mockResponse);
+
+        AuthorDtoRequest authorDtoRequest = new AuthorDtoRequest("Robertson");
+        MvcResult result = mockMvc.perform(post("/author").contentType("application/json").content("{\"name\" : \"Robertson\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name", equalTo("Robertson")))
+                .andReturn();
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void givenNoNValidRequest_whenCreateAuthor_thenReturn404() {
-        given()
-                .contentType("application/json")
-                .body("{\"name\":\"No\"}")
-                .when()
-                .request("POST", "/author")
-                .then()
-                .statusCode(404)
-                .body("code", equalTo("400001"))
-                .body("errorMessage", equalTo("Author name should be between 3 and 15 characters. "));
+    public void readAllAuthors_whenValidRequest_thenReturn200() throws Exception {
+        List<AuthorDtoResponse> mockResponse = Arrays.asList(new AuthorDtoResponse(1L, "Robertson", null, null), new AuthorDtoResponse(2L, "Rebecca", null, null));
+        when(authorService.readAll(any(Integer.class), any(Integer.class), any(String.class))).thenReturn(mockResponse);
+        mockMvc.perform(get("/author").param("limit", "5").param("page", "1").param("sortBy", "name:desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", equalTo(1)))
+                .andExpect(jsonPath("$[0].name", equalTo("Robertson")))
+                .andExpect(jsonPath("$[1].id", equalTo(2)))
+                .andExpect(jsonPath("$[1].name", equalTo("Rebecca")))
+                .andReturn();
+    }
+
+
+    @Test
+    public void testReadByIdMethod() throws Exception {
+        AuthorDtoResponse mockResponse = new AuthorDtoResponse(1L, "Robertson", null, null);
+        when(authorService.readById(any())).thenReturn(mockResponse);
+        mockMvc.perform(get("/author/{id}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", equalTo(1)))
+                .andExpect(jsonPath("$.name", equalTo("Robertson")))
+                .andReturn();
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void testReadByIdMethod() {
-        Response response = RestAssured.given()
-                .contentType("application/json")
-                .body("{\"name\" : \"Mark Aurelius\"}")
-                .request("POST", "/author")
-                .then().statusCode(201).extract().response();
-        given()
-                .request("GET", "/author/" + response.jsonPath().getLong("id"))
-                .then()
-                .statusCode(200)
-                .body("name", equalTo("Mark Aurelius"));
-        given().request("DELETE", "/author/" + response.jsonPath().getLong("id"));
+    public void testDeleteAuthorWithUnmatchingUsername_whenValidRequest_thenReturnForbidden() throws Exception {
+        mockMvc.perform(delete("/author/{id}", 1L))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void testDeleteAuthor() {
-        Response response = RestAssured.given()
-                .contentType("application/json")
-                .body("{\"name\" : \"Mark Aurelius\"}")
-                .request("POST", "/author")
-                .then().statusCode(201).extract().response();
-        given().request("DELETE", "/author/" + response.jsonPath().getLong("id")).then().statusCode(204);
-        given()
-                .request("GET", "/author/" + response.jsonPath().getLong("id"))
-                .then()
-                .statusCode(404);
+    @WithMockUser(authorities = "Administrator")
+    public void testDeleteAuthorWithMatchingUsername_whenValidRequest_thenReturnOk() throws Exception {
+        when(authorService.deleteById(any())).thenReturn(true);
+        mockMvc.perform(delete("/author/{id}", 1L))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(authorities = "User")
+    public void testDeleteAuthorWithUserAuthority_whenValidRequest_thenReturnForbidden() throws Exception {
+        when(authorService.deleteById(any())).thenReturn(true);
+        mockMvc.perform(delete("/author/{id}", 1L))
+                .andExpect(status().isForbidden());
     }
 }

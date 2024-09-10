@@ -72,6 +72,7 @@ public class AuthorController implements BaseController<AuthorDtoRequest, Author
             @ApiResponse(code = 201, message = "Successfully created author"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 404, message = "Internal resource not found"),
             @ApiResponse(code = 500, message = "Internal server error")
     })
@@ -89,6 +90,7 @@ public class AuthorController implements BaseController<AuthorDtoRequest, Author
             @ApiResponse(code = 200, message = "Successfully updated author"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 404, message = "Internal resource not found"),
             @ApiResponse(code = 500, message = "Internal server error")
     })
@@ -106,6 +108,7 @@ public class AuthorController implements BaseController<AuthorDtoRequest, Author
             @ApiResponse(code = 204, message = "Successfully deleted author"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 404, message = "Internal resource not found"),
             @ApiResponse(code = 500, message = "Internal server error"),
     })

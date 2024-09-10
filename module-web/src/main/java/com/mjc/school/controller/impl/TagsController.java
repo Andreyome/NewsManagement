@@ -71,6 +71,7 @@ public class TagsController implements BaseController<TagDtoRequest, TagDtoRespo
             @ApiResponse(code = 201, message = "Successfully created tag"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 500, message = "Internal server error"),
             @ApiResponse(code = 404, message = "Internal resource not found")
     })
@@ -88,6 +89,7 @@ public class TagsController implements BaseController<TagDtoRequest, TagDtoRespo
             @ApiResponse(code = 200, message = "Successfully updated tag"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 500, message = "Internal server error"),
             @ApiResponse(code = 404, message = "Internal resource not found")
     })
@@ -105,6 +107,7 @@ public class TagsController implements BaseController<TagDtoRequest, TagDtoRespo
             @ApiResponse(code = 204, message = "Successfully deleted tag by Id"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 500, message = "Internal server error"),
             @ApiResponse(code = 404, message = "Internal resource not found")
     })

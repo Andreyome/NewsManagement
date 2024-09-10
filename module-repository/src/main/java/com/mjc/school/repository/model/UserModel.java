@@ -1,8 +1,6 @@
 package com.mjc.school.repository.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,6 +13,8 @@ import java.util.List;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserModel implements UserDetails {
     @Getter
     @Id

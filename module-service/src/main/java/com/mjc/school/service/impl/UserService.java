@@ -21,17 +21,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService implements UserDetailsService {
     @Autowired
-    public UserService(UserRepository userRepository, JwtService jwtService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, JwtService jwtService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder,UserMapper userMapper) {
         this.userRepository=userRepository;
         this.jwtService=jwtService;
         this.authenticationManager=authenticationManager;
         this.passwordEncoder=passwordEncoder;
+        this.mapper= userMapper;
     }
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
-    private final UserMapper mapper = Mappers.getMapper(UserMapper.class);
+    private final UserMapper mapper;
 
     public UserResponse signUp(UserSignUp userSignUp) {
         UserModel userModel = mapper.userDtoToModel(userSignUp);

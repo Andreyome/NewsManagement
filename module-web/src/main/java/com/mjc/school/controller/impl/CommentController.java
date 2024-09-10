@@ -71,6 +71,7 @@ public class CommentController implements BaseController<CommentDtoRequest, Comm
             @ApiResponse(code = 201, message = "Successfully created a comment"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 500, message = "Internal server error"),
             @ApiResponse(code = 404, message = "Internal resource not found")
     })
@@ -88,6 +89,7 @@ public class CommentController implements BaseController<CommentDtoRequest, Comm
             @ApiResponse(code = 200, message = "Successfully updated comment"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 500, message = "Internal server error"),
             @ApiResponse(code = 404, message = "Internal resource not found")
     })
@@ -105,6 +107,7 @@ public class CommentController implements BaseController<CommentDtoRequest, Comm
             @ApiResponse(code = 204, message = "Successfully deleted a comment"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized access"),
+            @ApiResponse(code = 403, message = "User does not have required role for the operation"),
             @ApiResponse(code = 500, message = "Internal server error"),
             @ApiResponse(code = 404, message = "Internal resource not found")
 
