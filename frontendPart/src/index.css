@@ -1,0 +1,33 @@
+body, html {
+    height: 100%;
+  }
+  .container-fluid{
+    min-height: 100vh; /* Ensure container height takes the full viewport */
+    display: flex;
+    flex-direction: column;
+  }
+  .footer {
+    font-family: 'Univers Next Pro', sans-serif;
+    font-size: 30px !important;
+    position: fixed; /* or position: fixed; */
+    bottom: 0; /* position the footer at the bottom of the page */
+    text-align: center;
+    width: 100%;
+    z-index: 5;
+  }
+  .app-container{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .main-content{
+    flex: 1;
+    padding-top: 60px;
+    padding-bottom: 60px;
+    height: 100%;
+  }
+  .login-content{
+    flex: 1;
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }

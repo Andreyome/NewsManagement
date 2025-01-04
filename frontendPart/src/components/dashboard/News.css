@@ -1,0 +1,32 @@
+.news-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-news {
+  flex-grow: 1;
+  margin-right: 10px;
+  /* Adds space between the search bar and button */
+  width: 80%
+}
+
+.add-news-btn {
+  flex-shrink: 0;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.create-date-dropdown {
+  display: inline-block;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+}
+.custom-modal-style .modal-content {
+  border-radius: 0 !important;
+}
