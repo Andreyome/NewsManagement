@@ -1,6 +1,7 @@
 package com.mjc.school.service.tests;
 import com.mjc.school.repository.impl.AuthorRepositoryImpl;
 import com.mjc.school.repository.model.AuthorModel;
+import com.mjc.school.repository.model.PageResponse;
 import com.mjc.school.service.dto.AuthorDtoRequest;
 import com.mjc.school.service.dto.AuthorDtoResponse;
 import com.mjc.school.service.exception.NotFoundException;
@@ -46,7 +47,7 @@ public class AuthorServiceTest {
     @Test
     public void testReadAllAuthors() {
         List<AuthorModel> authorModelList = List.of(new AuthorModel(authorName,createDate,updateDate),new AuthorModel(authorName.toUpperCase(),createDate,updateDate));
-        when(authorRepositoryImpl.readAll(any(), any(),any())).thenReturn(authorModelList);
+        when(authorRepositoryImpl.readAll(any(), any(),any())).thenReturn(new PageResponse<AuthorModel>(authorModelList,5,5));
         List<AuthorDtoResponse> responses = authorService.readAll(1,5,"name:desc");
         assertNotNull(responses);
         assertEquals(authorModelList.size(), responses.size());

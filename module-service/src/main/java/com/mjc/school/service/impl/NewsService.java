@@ -5,10 +5,12 @@ import com.mjc.school.repository.impl.AuthorRepositoryImpl;
 import com.mjc.school.repository.impl.TagRepositoryImpl;
 import com.mjc.school.repository.model.AuthorModel;
 import com.mjc.school.repository.model.NewsModel;
+import com.mjc.school.repository.model.PageResponse;
 import com.mjc.school.repository.model.TagModel;
 import com.mjc.school.service.NewsServInterface;
 import com.mjc.school.service.dto.NewsDtoRequest;
 import com.mjc.school.service.dto.NewsDtoResponse;
+import com.mjc.school.service.dto.PageDtoResponse;
 import com.mjc.school.service.exception.NotFoundException;
 import com.mjc.school.service.exception.ValidationException;
 import com.mjc.school.service.mapper.NewsMapper;
@@ -44,9 +46,13 @@ public class NewsService implements NewsServInterface {
 
     @Override
     @Transactional(readOnly = true)
-    public List<NewsDtoResponse> readAll(Integer page, Integer limit, String sortBy) {
+    public PageDtoResponse<NewsDtoResponse> readAll(Integer page, Integer limit, String sortBy) {
         try {
-            return newsRepository.readAll(page, limit, sortBy).stream().map(mapper::newsToDto).collect(Collectors.toList());
+            PageResponse<NewsModel> responseFromRepository = newsRepository.readAll(page, limit, sortBy);
+            long totalItems = responseFromRepository.getTotalElements();
+            int totalPages = responseFromRepository.getTotalPages();
+            List<NewsDtoResponse> newsDtoResponses =responseFromRepository.getItems().stream().map(mapper::newsToDto).collect(Collectors.toList());
+            return new PageDtoResponse<>(newsDtoResponses, totalItems,totalPages );
         } catch (InvalidDataAccessApiUsageException e) {
             throw new ValidationException("Wrong parameters for method provided.");
         }
@@ -106,8 +112,9 @@ public class NewsService implements NewsServInterface {
 
     @Override
     @Transactional(readOnly = true)
-    public List<NewsDtoResponse> readNewsByParams(List<Long> tagsIds, List<String> tagsNames, String authorName, String title, String content) {
-        return mapper.modelListToDtoList(newsRepository.readNewsByParams(tagsIds, tagsNames, authorName, title, content));
+    public PageDtoResponse<NewsDtoResponse> readNewsByParams(List<Long> tagsIds, List<String> tagsNames, String authorName, String title, String content,Integer page, Integer pageSize, String sortBy) {
+        PageResponse<NewsModel> newsModelPageResponse = newsRepository.readNewsByParams(tagsIds, tagsNames, authorName, title, content,page,pageSize,sortBy);
+        return new PageDtoResponse<NewsDtoResponse>(mapper.modelListToDtoList(newsModelPageResponse.getItems()),newsModelPageResponse.getTotalElements(),newsModelPageResponse.getTotalPages());
     }
 
      public void createNonExistingTags(List<String> tagNames) {

@@ -1,6 +1,7 @@
 package com.mjc.school.service.tests;
 
 import com.mjc.school.repository.impl.TagRepositoryImpl;
+import com.mjc.school.repository.model.PageResponse;
 import com.mjc.school.repository.model.TagModel;
 import com.mjc.school.service.dto.TagDtoRequest;
 import com.mjc.school.service.dto.TagDtoResponse;
@@ -50,7 +51,7 @@ public class TagServiceTest {
     public void testReadAllTags() {
 
         List<TagModel> tagModelList = List.of(new TagModel(1L,TagName,null),new TagModel(1L,TagName.toUpperCase(),null));
-        when(tagRepositoryImpl.readAll(any(), any(),any())).thenReturn(tagModelList);
+        when(tagRepositoryImpl.readAll(any(), any(),any())).thenReturn(new PageResponse<>(tagModelList,5,5));
         List<TagDtoResponse> responses = tagService.readAll(1,5,"name:desc");
         assertNotNull(responses);
         assertEquals(tagModelList.size(), responses.size());

@@ -37,7 +37,7 @@ public class CommentService implements CommentServInterface {
     @Override
     @Transactional(readOnly = true)
     public List<CommentDtoResponse> readAll(Integer page, Integer limit, String sortBy) {
-        return mapper.commentListToDto(commentRepository.readAll(page, limit, sortBy));
+        return mapper.commentListToDto(commentRepository.readAll(page, limit, sortBy).getItems());
     }
 
     @Override

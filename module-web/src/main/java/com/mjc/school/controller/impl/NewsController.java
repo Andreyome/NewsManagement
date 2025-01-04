@@ -1,7 +1,7 @@
 package com.mjc.school.controller.impl;
 
-import com.mjc.school.controller.BaseController;
 import com.mjc.school.controller.Hateoas.HateoasHelper;
+import com.mjc.school.controller.NewsControllerInterface;
 import com.mjc.school.service.*;
 import com.mjc.school.service.dto.*;
 import io.swagger.annotations.Api;
@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/news", produces = {"application/JSON"})
 @Api(produces = "application/JSON", value = "CRUD operations with News")
-public class NewsController implements BaseController<NewsDtoRequest, NewsDtoResponse, Long> {
+public class NewsController implements NewsControllerInterface<NewsDtoRequest, NewsDtoResponse, Long> {
     private final NewsServInterface newsService;
     private final TagServInterface tagService;
     private final CommentServInterface commentService;
@@ -49,9 +49,9 @@ public class NewsController implements BaseController<NewsDtoRequest, NewsDtoRes
             @ApiResponse(code = 500, message = "Internal server error"),
             @ApiResponse(code = 404, message = "Internal resource not found")
     })
-    public List<NewsDtoResponse> readAll(@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-                                         @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
-                                         @RequestParam(value = "sortBy", required = false, defaultValue = "createDate:desc") String sortBy) {
+    public PageDtoResponse<NewsDtoResponse> readAll(@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+                                                    @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
+                                                    @RequestParam(value = "sortBy", required = false, defaultValue = "createDate:desc") String sortBy) {
         return newsService.readAll(page, limit, sortBy);
     }
 
@@ -134,13 +134,16 @@ public class NewsController implements BaseController<NewsDtoRequest, NewsDtoRes
             @ApiResponse(code = 500, message = "Internal server error"),
             @ApiResponse(code = 404, message = "Internal resource not found")
     })
-    public List<NewsDtoResponse> readNewsByParams(
+    public PageDtoResponse<NewsDtoResponse> readNewsByParams(
             @RequestParam(name = "Tag_Ids", required = false) List<Long> tagsIds,
             @RequestParam(name = "Tag_Names", required = false) List<String> tagsNames,
             @RequestParam(name = "Author", required = false) String authorName,
             @RequestParam(name = "Title", required = false) String title,
-            @RequestParam(name = "Content", required = false) String content) {
-        return newsService.readNewsByParams(tagsIds, tagsNames, authorName, title, content);
+            @RequestParam(name = "Content", required = false) String content,
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "createDate:desc") String sortBy) {
+        return newsService.readNewsByParams(tagsIds, tagsNames, authorName, title, content, page, limit, sortBy);
     }
 
     @GetMapping(value = "/{id:\\d+}/tag")

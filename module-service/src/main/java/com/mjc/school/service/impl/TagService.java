@@ -34,7 +34,7 @@ public class TagService implements TagServInterface {
     @Override
     @Transactional(readOnly = true)
     public List<TagDtoResponse> readAll(Integer page, Integer limit, String sortBy) {
-        return mapper.tagListToDto(tagRepository.readAll(page, limit, sortBy));
+        return mapper.tagListToDto(tagRepository.readAll(page, limit, sortBy).getItems());
     }
 
     @Override

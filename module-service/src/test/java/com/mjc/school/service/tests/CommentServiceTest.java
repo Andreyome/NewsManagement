@@ -4,6 +4,7 @@ import com.mjc.school.repository.impl.CommentRepositoryImpl;
 import com.mjc.school.repository.impl.NewsRepositoryImpl;
 import com.mjc.school.repository.model.CommentModel;
 import com.mjc.school.repository.model.NewsModel;
+import com.mjc.school.repository.model.PageResponse;
 import com.mjc.school.service.dto.CommentDtoRequest;
 import com.mjc.school.service.dto.CommentDtoResponse;
 import com.mjc.school.service.exception.NotFoundException;
@@ -109,7 +110,7 @@ public class CommentServiceTest {
     @Test
     public void testReadAllComments() {
         List<CommentModel> commentModelList = List.of(new CommentModel(1L,commentContent,createDate,updateDate,newsModel),new CommentModel(2L,commentContent,createDate,updateDate,newsModel));
-        when(commentRepository.readAll(any(), any(),any())).thenReturn(commentModelList);
+        when(commentRepository.readAll(any(), any(),any())).thenReturn(new PageResponse<CommentModel>(commentModelList,5,5));
         List<CommentDtoResponse> responses = commentService.readAll(1,5,"name:desc");
         assertNotNull(responses);
         assertEquals(commentModelList.size(), responses.size());

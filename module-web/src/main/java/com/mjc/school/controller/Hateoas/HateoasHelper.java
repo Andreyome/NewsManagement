@@ -22,7 +22,7 @@ public class HateoasHelper {
         AuthorDtoResponse tmp = dtoModel.getContent();
         if (tmp == null) return;
         dtoModel.add(linkTo(methodOn(AuthorController.class).readById(tmp.id())).withSelfRel());
-        dtoModel.add(linkTo(methodOn(NewsController.class).readNewsByParams(null, null, tmp.name(), null, null)).withRel("news"));
+        dtoModel.add(linkTo(methodOn(NewsController.class).readNewsByParams(null, null, tmp.name(), null, null,null,null,null)).withRel("news"));
     }
 
     public static void addCommentLinks(EntityModel<CommentDtoResponse> dtoModel) {
@@ -46,7 +46,7 @@ public class HateoasHelper {
     public static void addTagLinks(EntityModel<TagDtoResponse> dtoModel) {
         TagDtoResponse tmp = dtoModel.getContent();
         if (tmp == null) return;
-        dtoModel.add(linkTo(methodOn(NewsController.class).readNewsByParams(List.of(tmp.id()), null, tmp.name(), null, null)).withRel("news"));
+        dtoModel.add(linkTo(methodOn(NewsController.class).readNewsByParams(List.of(tmp.id()), null, tmp.name(), null, null,null,null,null)).withRel("news"));
 
     }
 

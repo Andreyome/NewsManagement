@@ -1,6 +1,5 @@
 package com.mjc.school.controller.impl;
 
-import com.mjc.school.service.dto.TagDtoResponse;
 import com.mjc.school.service.dto.UserResponse;
 import com.mjc.school.service.dto.UserSignIn;
 import com.mjc.school.service.dto.UserSignUp;

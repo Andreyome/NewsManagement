@@ -1,13 +1,10 @@
 package com.mjc.school.controller.tests;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mjc.school.service.dto.*;
-import com.mjc.school.service.impl.CommentService;
 import com.mjc.school.service.impl.NewsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -63,19 +59,19 @@ public class NewsControllerTest {
     @Test
     public void testReadAllNews() throws Exception {
         List<NewsDtoResponse> responseList = List.of(mockResponse,mockResponse);
-        when(newsService.readAll(anyInt(),anyInt(),anyString())).thenReturn(responseList);
+        when(newsService.readAll(anyInt(),anyInt(),anyString())).thenReturn(new PageDtoResponse<NewsDtoResponse>(responseList,5,5));
         mockMvc.perform(get("/news"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title", equalTo("title")))
-                .andExpect(jsonPath("$[0].content", equalTo("content")))
-                .andExpect(jsonPath("$[0].authorDto.id", equalTo(1)))
-                .andExpect(jsonPath("$[0].authorDto.name", equalTo("AuthorExampleName")))
-                .andExpect(jsonPath("$[0].tagDtoResponseList[0].id", equalTo(1)))
-                .andExpect(jsonPath("$[0].tagDtoResponseList[0].name", equalTo("TagExample")))
-                .andExpect(jsonPath("$[1].tagDtoResponseList[0].id", equalTo(1)))
-                .andExpect(jsonPath("$[1].tagDtoResponseList[0].name", equalTo("TagExample")))
-                .andExpect(jsonPath("$[1].authorDto.name", equalTo("AuthorExampleName")))
-                .andExpect(jsonPath("$[0].content", equalTo("content")));
+                .andExpect(jsonPath("$.items[0].title", equalTo("title")))
+                .andExpect(jsonPath("$.items[0].content", equalTo("content")))
+                .andExpect(jsonPath("$.items[0].authorDto.id", equalTo(1)))
+                .andExpect(jsonPath("$.items[0].authorDto.name", equalTo("AuthorExampleName")))
+                .andExpect(jsonPath("$.items[0].tagDtoResponseList[0].id", equalTo(1)))
+                .andExpect(jsonPath("$.items[0].tagDtoResponseList[0].name", equalTo("TagExample")))
+                .andExpect(jsonPath("$.items[1].tagDtoResponseList[0].id", equalTo(1)))
+                .andExpect(jsonPath("$.items[1].tagDtoResponseList[0].name", equalTo("TagExample")))
+                .andExpect(jsonPath("$.items[1].authorDto.name", equalTo("AuthorExampleName")))
+                .andExpect(jsonPath("$.items[0].content", equalTo("content")));
     }
     @Test
     @WithMockUser(authorities = "User")
@@ -116,7 +112,7 @@ public class NewsControllerTest {
     }
     @Test
     public void testReadByParamsWithProperAuthorities_AndReturnIsOk() throws Exception {
-        when(newsService.readNewsByParams(any(),any(),anyString(),anyString(),anyString())).thenReturn(List.of(mockResponse));
+        when(newsService.readNewsByParams(any(),any(),anyString(),anyString(),anyString(),any(),any(),any())).thenReturn(new PageDtoResponse<>(List.of(mockResponse),5,1));
         mockMvc.perform(get("/news/byParams")
                         .param("Tag_Ids",String.valueOf(5L), String.valueOf(6L))
                         .param("Tag_Names","TagName","TagName2")
@@ -124,8 +120,8 @@ public class NewsControllerTest {
                         .param("Content","content")
                         .param("Title","title"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title", equalTo("title")))
-                .andExpect(jsonPath("$[0].content", equalTo("content")))
-                .andExpect(jsonPath("$[0].authorDto.id", equalTo(1)));
+                .andExpect(jsonPath("$.items[0].title", equalTo("title")))
+                .andExpect(jsonPath("$.items[0].content", equalTo("content")))
+                .andExpect(jsonPath("$.items[0].authorDto.id", equalTo(1)));
     }
 }

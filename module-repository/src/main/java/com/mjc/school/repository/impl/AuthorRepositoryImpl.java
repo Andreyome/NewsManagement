@@ -2,6 +2,7 @@ package com.mjc.school.repository.impl;
 
 import com.mjc.school.repository.AuthorRepository;
 import com.mjc.school.repository.model.AuthorModel;
+import com.mjc.school.repository.model.PageResponse;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.NoResultException;
@@ -12,10 +13,11 @@ import java.util.Optional;
 @Repository("AuthorRepository")
 public class AuthorRepositoryImpl extends AbstractDBRepository<AuthorModel, Long> implements AuthorRepository {
     @Override
-    public List<AuthorModel> readAll(Integer page, Integer pageSize, String sortBy) {
+    public PageResponse<AuthorModel> readAll(Integer page, Integer pageSize, String sortBy) {
         if (sortBy.split(":")[0].equalsIgnoreCase("newsCount")) {
             String str = "SELECT a FROM AuthorModel a JOIN a.newsModelList n GROUP BY a ORDER BY COUNT(n) " + sortBy.split(":")[1];
-            return entityManager.createQuery(str).getResultList();
+            List<AuthorModel> listAuthors =entityManager.createQuery(str).getResultList();
+            return new PageResponse<>(listAuthors,listAuthors.size(),(int) Math.ceil((double) listAuthors.size() / pageSize));
         }
         return super.readAll(page, pageSize, sortBy);
     }

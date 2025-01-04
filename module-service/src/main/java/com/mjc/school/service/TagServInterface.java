@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface TagServInterface extends BaseService<TagDtoRequest, TagDtoResponse, Long> {
     List<TagDtoResponse> readByNewsId(Long id);
+    List<TagDtoResponse> readAll(Integer page, Integer limit, String sortBy);
 }
